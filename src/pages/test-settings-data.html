@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Settings Data Manager</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+    
+    .container {
+      background: white;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    }
+    
+    h1 {
+      color: #667eea;
+      margin-top: 0;
+    }
+    
+    h2 {
+      color: #764ba2;
+      border-bottom: 2px solid #667eea;
+      padding-bottom: 10px;
+      margin-top: 30px;
+    }
+    
+    .test-section {
+      margin: 20px 0;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      border-left: 4px solid #667eea;
+    }
+    
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      margin: 5px;
+      transition: transform 0.2s;
+    }
+    
+    button:hover {
+      transform: translateY(-2px);
+    }
+    
+    button:active {
+      transform: translateY(0);
+    }
+    
+    .success {
+      background: #d4edda;
+      border-left-color: #28a745;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 4px;
+      border-left: 4px solid #28a745;
+    }
+    
+    .error {
+      background: #f8d7da;
+      border-left-color: #dc3545;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 4px;
+      border-left: 4px solid #dc3545;
+    }
+    
+    .warning {
+      background: #fff3cd;
+      border-left-color: #ffc107;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 4px;
+      border-left: 4px solid #ffc107;
+    }
+    
+    .info {
+      background: #d1ecf1;
+      border-left-color: #0dcaf0;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 4px;
+      border-left: 4px solid #0dcaf0;
+    }
+    
+    pre {
+      background: #2d3748;
+      color: #68d391;
+      padding: 15px;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-size: 12px;
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin: 20px 0;
+    }
+    
+    .stat-card {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      border: 2px solid #667eea;
+      text-align: center;
+    }
+    
+    .stat-value {
+      font-size: 32px;
+      font-weight: bold;
+      color: #667eea;
+    }
+    
+    .stat-label {
+      font-size: 14px;
+      color: #666;
+      margin-top: 5px;
+    }
+    
+    textarea {
+      width: 100%;
+      min-height: 200px;
+      padding: 10px;
+      border: 2px solid #667eea;
+      border-radius: 6px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      margin: 10px 0;
+    }
+    
+    .overlap-item {
+      background: white;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 6px;
+      border-left: 4px solid #ffc107;
+    }
+    
+    .group-badge {
+      display: inline-block;
+      background: #667eea;
+      color: white;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      margin: 3px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧪 Settings Data Manager Test Suite</h1>
+    <p>Test all Phase 6 functionality: CRUD operations, validation, import/export, and overlap detection.</p>
+
+    <h2>📊 Configuration Statistics</h2>
+    <div class="test-section">
+      <button onclick="loadStats()">Load Statistics</button>
+      <div id="stats-display" class="stats-grid"></div>
+    </div>
+
+    <h2>📋 Load Configuration</h2>
+    <div class="test-section">
+      <button onclick="testLoadConfiguration()">Load Configuration</button>
+      <div id="load-result"></div>
+    </div>
+
+    <h2>➕ Add Rule Group</h2>
+    <div class="test-section">
+      <button onclick="testAddRuleGroup()">Add Test Rule Group</button>
+      <button onclick="testAddInvalidRuleGroup()">Try Adding Invalid Group</button>
+      <div id="add-result"></div>
+    </div>
+
+    <h2>✏️ Update Rule Group</h2>
+    <div class="test-section">
+      <button onclick="testUpdateRuleGroup()">Update First Group</button>
+      <button onclick="testUpdateInvalidIndex()">Try Invalid Index</button>
+      <div id="update-result"></div>
+    </div>
+
+    <h2>🗑️ Delete Rule Group</h2>
+    <div class="test-section">
+      <button onclick="testDeleteRuleGroup()">Delete Last Group</button>
+      <button onclick="testDeleteInvalidIndex()">Try Invalid Index</button>
+      <div id="delete-result"></div>
+    </div>
+
+    <h2>⚠️ Detect Overlapping Sites</h2>
+    <div class="test-section">
+      <button onclick="testDetectOverlaps()">Detect Overlaps</button>
+      <button onclick="setupOverlapTest()">Create Test Overlaps</button>
+      <div id="overlap-result"></div>
+    </div>
+
+    <h2>📤 Export Configuration</h2>
+    <div class="test-section">
+      <button onclick="testExportConfiguration()">Export Configuration</button>
+      <div id="export-result"></div>
+    </div>
+
+    <h2>📥 Import Configuration</h2>
+    <div class="test-section">
+      <button onclick="testImportConfiguration()">Import Sample Configuration</button>
+      <button onclick="testImportInvalidJSON()">Try Invalid JSON</button>
+      <div id="import-result"></div>
+      <details>
+        <summary>Custom Import (click to expand)</summary>
+        <textarea id="import-json" placeholder="Paste JSON configuration here..."></textarea>
+        <button onclick="testCustomImport()">Import Custom JSON</button>
+      </details>
+    </div>
+
+    <h2>🛠️ Utility Functions</h2>
+    <div class="test-section">
+      <button onclick="testUtilityFunctions()">Test Utilities</button>
+      <div id="utility-result"></div>
+    </div>
+
+    <h2>🧹 Cleanup</h2>
+    <div class="test-section">
+      <button onclick="resetToDefault()">Reset to Default Configuration</button>
+      <div id="cleanup-result"></div>
+    </div>
+  </div>
+
+  <script type="module">
+    import {
+      loadConfiguration,
+      saveConfiguration,
+      addRuleGroup,
+      updateRuleGroup,
+      deleteRuleGroup,
+      detectOverlappingSites,
+      exportConfiguration,
+      importConfiguration,
+      createDefaultRuleGroup,
+      formatDuration,
+      parseDuration,
+      getDayName,
+      formatTimeRange,
+      getConfigurationStats
+    } from './settings/settings-data.js';
+
+    // Make functions globally available for onclick handlers
+    window.settingsData = {
+      loadConfiguration,
+      saveConfiguration,
+      addRuleGroup,
+      updateRuleGroup,
+      deleteRuleGroup,
+      detectOverlappingSites,
+      exportConfiguration,
+      importConfiguration,
+      createDefaultRuleGroup,
+      formatDuration,
+      parseDuration,
+      getDayName,
+      formatTimeRange,
+      getConfigurationStats
+    };
+
+    // Test: Load Statistics
+    window.loadStats = async function() {
+      const display = document.getElementById('stats-display');
+      display.innerHTML = '<div class="info">Loading statistics...</div>';
+      
+      try {
+        const stats = await window.settingsData.getConfigurationStats();
+        
+        display.innerHTML = `
+          <div class="stat-card">
+            <div class="stat-value">${stats.totalGroups}</div>
+            <div class="stat-label">Total Rule Groups</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">${stats.totalSites}</div>
+            <div class="stat-label">Unique Sites</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">${stats.activeGroups}</div>
+            <div class="stat-label">Active Now</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">${stats.hasOverlaps ? '⚠️' : '✅'}</div>
+            <div class="stat-label">${stats.hasOverlaps ? 'Has Overlaps' : 'No Overlaps'}</div>
+          </div>
+        `;
+      } catch (error) {
+        display.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+      }
+    };
+
+    // Test: Load Configuration
+    window.testLoadConfiguration = async function() {
+      const result = document.getElementById('load-result');
+      result.innerHTML = '<div class="info">Loading...</div>';
+      
+      try {
+        const config = await window.settingsData.loadConfiguration();
+        result.innerHTML = `
+          <div class="success">✓ Configuration loaded successfully!</div>
+          <pre>${JSON.stringify(config, null, 2)}</pre>
+        `;
+      } catch (error) {
+        result.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+      }
+    };
+
+    // Test: Add Rule Group
+    window.testAddRuleGroup = async function() {
+      const result = document.getElementById('add-result');
+      result.innerHTML = '<div class="info">Adding rule group...</div>';
+      
+      try {
+        const newGroup = {
+          name: `Test Rule ${Date.now()}`,
+          duration: 120,
+          maxAccesses: 5,
+          strictMode: true,
+          sites: ['test.com', 'example.org'],
+          schedule: {
+            days: [1, 2, 3, 4, 5], // Weekdays
+            times: ['0900-1700'] // Business hours
+          }
+        };
+        
+        const addResult = await window.settingsData.addRuleGroup(newGroup);
+        
+        if (addResult.success) {
+          result.innerHTML = `
+            <div class="success">✓ Rule group added successfully at index ${addResult.index}!</div>
+            <pre>${JSON.stringify(newGroup, null, 2)}</pre>
+          `;
+        } else {
+          result.innerHTML = `
+            <div class="error">Failed to add rule group:</div>
+            <pre>${addResult.errors.join('\n')}</pre>
+          `;
+        }
+      } catch (error) {
+        result.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+      }
+    };
+
+    // Test: Add Invalid Rule Group
+    window.testAddInvalidRuleGroup = async function() {
+      const result = document.getElementById('add-result');
+      result.innerHTML = '<div class="info">Testing validation...</div>';
+      
+      try {
+        const invalidGroup = {
+          name: '',
+          duration: -10,
+          maxAccesses: 0,
+          strictMode: 'not a boolean',
+          sites: []
+        };
+        
+        const addResult = await window.settingsData.addRuleGroup(invalidGroup);
+        
+        if (!addResult.success) {
+          result.innerHTML = `
+            <div class="success">✓ Validation working! Correctly rejected invalid group:</div>
+            <ul>${addResult.errors.map(e => `<li>${e}</li>`).join('')}</ul>
+          `;
+        } else {
+          result.innerHTML = `<div class="error">Validation failed - invalid group was accepted!</div>`;
+        }
+      } catch (error) {
+        result.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+      }
+    };
+
+    // Test: Update Rule Group
+    window.testUpdateRuleGroup = async function() {
+      const result = document.getElementById('update-result');
+      result.innerHTML = '<div class="info">Updating rule group...</div>';
+      
+      try {
+        const config = await window.settingsData.loadConfiguration();
+        
+        if (config.groups.length === 0) {
+          result.innerHTML = `<div class="warning">No groups to update. Add a group first!</div>`;
+          return;
+        }
+        
+        const updatedGroup = {
+          ...config.groups[0],
+          name: `${config.groups[0].name} (Updated)`,
+          maxAccesses: config.groups[0].maxAccesses + 1
+        };
+        
+        const updateResult = await window.settingsData.updateRuleGroup(0, updatedGroup);
+        
+        if (updateResult.success) {
+          result.innerHTML = `
+            <div class="success">✓ Rule group updated successfully!</div>
+            <pre>${JSON.stringify(updatedGroup, null, 2)}</pre>
+          `;
+        } else {
+          result.innerHTML = `
+            <div class="error">Failed to update rule group:</div>
+            <pre>${updateResult.errors.join('\n')}</pre>
+          `;
+        }
+      } catch (error) {
+        result.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+      }
+    };
+
+    // Test: Update Invalid Index
+    window.testUpdateInvalidIndex = async function() {
+      const result = document.getElementById('update-result');
+      result.innerHTML = '<div class="info">Testing index validation...</div>';
+      
+      try {
+        const group = window.settingsData.createDefaultRuleGroup();
+        const updateResult = await window.settingsData.updateRuleGroup(999, group);
+        
+        if (!updateResult.success) {
+          result.innerHTML = `
+            <div class="success">✓ Index validation working! Correctly rejected invalid index:</div>
+            <pre>${updateResult.errors.join('\n')}</pre>
+          `;
+        } else {
+          result.innerHTML = `<div class="error">Index validation failed!</div>`;
+        }
+      } catch (error) {
+        result.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+      }
+    };
+
+    // Test: Delete Rule Group
+    window.testDeleteRuleGroup = async function() {
+      const result = document.getElementById('delete-result');
+      result.innerHTML = '<div class="info">Deleting rule group...</div>';
+      
+      try {
+        const config = await window.settingsData.loadConfiguration();
+        
+        if (config.groups.length === 0) {
+          result.innerHTML = `<div class="warning">No groups to delete!</div>`;
+          return;
+        }
+        
+        const lastIndex = config.groups.length - 1;
+        const groupName = config.groups[lastIndex].name;
+        
+        const deleteResult = await window.settingsData.deleteRuleGroup(lastIndex);
+        
+        if (deleteResult.success) {
+          result.innerHTML = `
+            <div class="success">✓ Rule group "${groupName}" deleted successfully!</div>
+            <div class="info">Groups remaining: ${config.groups.length - 1}</div>
+          `;
+        } else {
+          result.innerHTML = `
+            <div class="error">Failed to delete rule group:</div>
+            <pre>${deleteResult.errors.join('\n')}</pre>
+          `;
+        }
+      } catch (error) {
+        result.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+      }
+    };
+
+    // Test: Delete Invalid Index
+    window.testDeleteInvalidIndex = async function() {
+      const result = document.getElementById('delete-result');
+      result.innerHTML = '<div class="info">Testing delete validation...</div>';
+      
+      try {
+        const deleteResult = await window.settingsData.deleteRuleGroup(-1);
+        
+        if (!deleteResult.success) {
+          result.innerHTML = `
+            <div class="success">✓ Delete validation working! Correctly rejected invalid index:</div>
+            <pre>${deleteResult.errors.join('\n')}</pre>
+          `;
+        } else {
+          result.innerHTML = `<div class="error">Delete validation failed!</div>`;
+        }
+      } catch (error) {
+        result.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+      }
+    };
+
+    // Test: Detect Overlaps
+    window.testDetectOverlaps = async function() {
+      const result = document.getElementById('overlap-result');
+      result.innerHTML = '<div class="info">Detecting overlaps...</div>';
+      
+      try {
+        const overlaps = await window.settingsData.detectOverlappingSites();
+        
+        if (overlaps.length === 0) {
+          result.innerHTML = `<div class="success">✓ No overlapping sites found!</div>`;
+        } else {
+          let html = `<div class="warning">Found ${overlaps.length} site(s) in multiple groups:</div>`;
+          
+          overlaps.forEach(overlap => {
+            const status = overlap.groups[0].overlapping ? '⚠️ Overlapping schedules' : '✓ Non-overlapping schedules';
+            html += `
+              <div class="overlap-item">
+                <strong>Site: ${overlap.site}</strong> ${status}<br>
+                <div style="margin-top: 10px;">
+                  ${overlap.groups.map(g => 
+                    `<span class="group-badge">${g.name}</span>`
+                  ).join('')}
+                </div>
+              </div>
+            `;
+          });
+          
+          result.innerHTML = html;
+        }
+      } catch (error) {
+        result.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+      }
+    };
+
+    // Setup Overlap Test
+    window.setupOverlapTest = async function() {
+      const result = document.getElementById('overlap-result');
+      result.innerHTML = '<div class="info">Setting up overlap test...</div>';
+      
+      try {
+        const config = {
+          groups: [
+            {
+              name: 'Morning Rule',
+              duration: 60,
+              maxAccesses: 3,
+              strictMode: false,
+              sites: ['example.com', 'test.com'],
+              schedule: {
+                days: [1, 2, 3, 4, 5],
+                times: ['0900-1200']
+              }
+            },
+            {
+              name: 'Afternoon Rule',
+              duration: 120,
+              maxAccesses: 5,
+              strictMode: false,
+              sites: ['example.com', 'another.com'],
+              schedule: {
+                days: [1, 2, 3, 4, 5],
+                times: ['1300-1700']
+              }
+            },
+            {
+              name: 'Evening Rule (Overlaps)',
+              duration: 90,
+              maxAccesses: 2,
+              strictMode: false,
+              sites: ['example.com'],
+              schedule: {
+                days: [1, 2, 3, 4, 5],
+                times: ['1100-1400'] // Overlaps with both!
+              }
+            }
+          ]
+        };
+        
+        const saveResult = await window.settingsData.saveConfiguration(config);
+        
+        if (saveResult.success) {
+          result.innerHTML = `
+            <div class="success">✓ Test configuration created! Now click "Detect Overlaps"</div>
+          `;
+        } else {
+          result.innerHTML = `<div class="error">Failed to save test config</div>`;
+        }
+      } catch (error) {
+        result.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+      }
+    };
+
+    // Test: Export Configuration
+    window.testExportConfiguration = async function() {
+      const result = document.getElementById('export-result');
+      result.innerHTML = '<div class="info">Exporting...</div>';
+      
+      try {
+        const json = await window.settingsData.exportConfiguration();
+        
+        result.innerHTML = `
+          <div class="success">✓ Configuration exported successfully!</div>
+          <button onclick="navigator.clipboard.writeText(document.querySelector('#export-result pre').textContent).then(() => alert('Copied to clipboard!'))">
+            Copy to Clipboard
+          </button>
+          <pre>${json}</pre>
+        `;
+      } catch (error) {
+        result.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+      }
+    };
+
+    // Test: Import Configuration
+    window.testImportConfiguration = async function() {
+      const result = document.getElementById('import-result');
+      result.innerHTML = '<div class="info">Importing sample configuration...</div>';
+      
+      const sampleConfig = {
+        groups: [
+          {
+            name: 'Imported Rule',
+            duration: 90,
+            maxAccesses: 4,
+            strictMode: false,
+            sites: ['imported.com'],
+            schedule: {
+              days: [0, 6],
+              times: ['1000-2000']
+            }
+          }
+        ]
+      };
+      
+      try {
+        const importResult = await window.settingsData.importConfiguration(
+          JSON.stringify(sampleConfig, null, 2)
+        );
+        
+        if (importResult.success) {
+          result.innerHTML = `
+            <div class="success">✓ Configuration imported successfully!</div>
+            <pre>${JSON.stringify(sampleConfig, null, 2)}</pre>
+          `;
+        } else {
+          result.innerHTML = `
+            <div class="error">Failed to import:</div>
+            <pre>${importResult.errors.join('\n')}</pre>
+          `;
+        }
+      } catch (error) {
+        result.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+      }
+    };
+
+    // Test: Import Invalid JSON
+    window.testImportInvalidJSON = async function() {
+      const result = document.getElementById('import-result');
+      result.innerHTML = '<div class="info">Testing invalid JSON...</div>';
+      
+      try {
+        const importResult = await window.settingsData.importConfiguration(
+          '{invalid json here'
+        );
+        
+        if (!importResult.success) {
+          result.innerHTML = `
+            <div class="success">✓ JSON validation working! Correctly rejected invalid JSON:</div>
+            <pre>${importResult.errors.join('\n')}</pre>
+          `;
+        } else {
+          result.innerHTML = `<div class="error">JSON validation failed!</div>`;
+        }
+      } catch (error) {
+        result.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+      }
+    };
+
+    // Test: Custom Import
+    window.testCustomImport = async function() {
+      const result = document.getElementById('import-result');
+      const json = document.getElementById('import-json').value;
+      
+      result.innerHTML = '<div class="info">Importing custom configuration...</div>';
+      
+      try {
+        const importResult = await window.settingsData.importConfiguration(json);
+        
+        if (importResult.success) {
+          result.innerHTML = `<div class="success">✓ Custom configuration imported successfully!</div>`;
+        } else {
+          result.innerHTML = `
+            <div class="error">Failed to import:</div>
+            <ul>${importResult.errors.map(e => `<li>${e}</li>`).join('')}</ul>
+          `;
+        }
+      } catch (error) {
+        result.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+      }
+    };
+
+    // Test: Utility Functions
+    window.testUtilityFunctions = function() {
+      const result = document.getElementById('utility-result');
+      
+      const tests = [
+        {
+          name: 'formatDuration',
+          tests: [
+            { input: 30, expected: '30 minutes' },
+            { input: 60, expected: '1 hour' },
+            { input: 90, expected: '1 hour 30 minutes' },
+            { input: 120, expected: '2 hours' }
+          ]
+        },
+        {
+          name: 'parseDuration',
+          tests: [
+            { input: '2h', expected: 120 },
+            { input: '90m', expected: 90 },
+            { input: '1h30m', expected: 90 },
+            { input: '2 hours', expected: 120 }
+          ]
+        },
+        {
+          name: 'getDayName',
+          tests: [
+            { input: 0, expected: 'Sunday' },
+            { input: 3, expected: 'Wednesday' },
+            { input: 6, expected: 'Saturday' }
+          ]
+        },
+        {
+          name: 'formatTimeRange',
+          tests: [
+            { input: '0900-1700', expected: '9:00 AM - 5:00 PM' },
+            { input: '0000-2359', expected: '12:00 AM - 11:59 PM' },
+            { input: '1200-1300', expected: '12:00 PM - 1:00 PM' }
+          ]
+        }
+      ];
+      
+      let html = '';
+      
+      tests.forEach(testGroup => {
+        html += `<h3>${testGroup.name}</h3>`;
+        testGroup.tests.forEach(test => {
+          const actual = window.settingsData[testGroup.name](test.input);
+          const passed = JSON.stringify(actual) === JSON.stringify(test.expected);
+          
+          html += `
+            <div class="${passed ? 'success' : 'error'}" style="margin: 5px 0; padding: 5px;">
+              ${passed ? '✓' : '✗'} 
+              Input: ${JSON.stringify(test.input)} 
+              → Expected: ${JSON.stringify(test.expected)} 
+              → Got: ${JSON.stringify(actual)}
+            </div>
+          `;
+        });
+      });
+      
+      result.innerHTML = html;
+    };
+
+    // Reset to Default
+    window.resetToDefault = async function() {
+      const result = document.getElementById('cleanup-result');
+      result.innerHTML = '<div class="info">Resetting to default configuration...</div>';
+      
+      try {
+        const defaultConfig = {
+          groups: [
+            {
+              name: 'Example Rule - Delete Me',
+              duration: 60,
+              maxAccesses: 3,
+              strictMode: false,
+              sites: ['example.com'],
+              schedule: {
+                days: [0, 1, 2, 3, 4, 5, 6],
+                times: ['0000-2400']
+              }
+            }
+          ]
+        };
+        
+        const saveResult = await window.settingsData.saveConfiguration(defaultConfig);
+        
+        if (saveResult.success) {
+          result.innerHTML = `<div class="success">✓ Reset to default configuration!</div>`;
+        } else {
+          result.innerHTML = `<div class="error">Failed to reset</div>`;
+        }
+      } catch (error) {
+        result.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+      }
+    };
+
+    // Load stats on page load
+    window.addEventListener('load', () => {
+      window.loadStats();
+    });
+  </script>
+</body>
+</html>

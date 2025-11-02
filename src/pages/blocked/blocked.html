@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Access Limit Reached</title>
+  <link rel="stylesheet" href="blocked.css">
+</head>
+<body>
+  <div class="container">
+    <div class="icon">🍌</div>
+    <h1>Access Limit Reached</h1>
+    <p class="subtitle">You've hit your limit for this site</p>
+    
+    <div class="info-box" id="info">
+      <div class="info-row">
+        <span class="label">Site:</span>
+        <span class="value" id="site">-</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Rule:</span>
+        <span class="value" id="rule">-</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Limit:</span>
+        <span class="value" id="limit">-</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Time Window:</span>
+        <span class="value" id="duration">-</span>
+      </div>
+      <div class="info-row" id="unblock-row">
+        <span class="label">Available Again:</span>
+        <span class="value" id="unblockTime">-</span>
+      </div>
+    </div>
+    
+    <div class="message">
+      <p>Take a break. This is working as intended.</p>
+    </div>
+    
+    <div class="actions">
+      <button id="settingsBtn" class="btn btn-primary">Open Settings</button>
+    </div>
+  </div>
+  
+  <script src="blocked.js"></script>
+</body>
+</html>

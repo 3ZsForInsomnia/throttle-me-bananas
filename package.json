@@ -1,0 +1,17 @@
+{
+  "name": "throttle-me-bananas",
+  "version": "0.1.0",
+  "description": "Chrome extension to control website access by limiting visits within time windows",
+  "type": "module",
+  "scripts": {
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
+    "test:coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage"
+  },
+  "keywords": ["chrome-extension", "productivity", "focus"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}

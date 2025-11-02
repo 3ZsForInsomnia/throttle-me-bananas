@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Storage Tests - Throttle Me, Bananas!</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .controls {
+      margin: 20px 0;
+      padding: 20px;
+      background: #f5f5f5;
+      border-radius: 8px;
+    }
+    .controls h2 {
+      margin-top: 0;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 5px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    button.danger {
+      background: #dc3545;
+    }
+    button.danger:hover {
+      background: #c82333;
+    }
+    .output {
+      margin: 20px 0;
+      padding: 15px;
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    .output h3 {
+      margin-top: 0;
+    }
+    pre {
+      background: #f5f5f5;
+      padding: 15px;
+      border-radius: 4px;
+      overflow-x: auto;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+    .success {
+      color: #28a745;
+      font-weight: bold;
+    }
+    .error {
+      color: #dc3545;
+      font-weight: bold;
+    }
+    .info {
+      color: #17a2b8;
+      font-weight: bold;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin: 20px 0;
+    }
+    .stat-card {
+      padding: 15px;
+      background: #e9ecef;
+      border-radius: 4px;
+    }
+    .stat-card h4 {
+      margin: 0 0 10px 0;
+      color: #495057;
+    }
+    .stat-card .value {
+      font-size: 24px;
+      font-weight: bold;
+      color: #007bff;
+    }
+  </style>
+</head>
+<body>
+  <h1>Storage Layer Tests</h1>
+  
+  <div class="controls">
+    <h2>Test Controls</h2>
+    <button id="btn-get-config">Get Configuration</button>
+    <button id="btn-save-config">Save Test Configuration</button>
+    <button id="btn-add-log">Add Access Log</button>
+    <button id="btn-get-logs">Get Access Logs</button>
+    <button id="btn-prune-logs">Prune Old Logs</button>
+    <button id="btn-validation">Test Validation</button>
+    <button id="btn-stats">Get Storage Stats</button>
+    <button class="danger" id="btn-clear-all">Clear All Data</button>
+  </div>
+  
+  <div class="stats" id="stats"></div>
+  <div class="output" id="output"></div>
+  
+  <script type="module" src="test-storage.js"></script>
+</body>
+</html>

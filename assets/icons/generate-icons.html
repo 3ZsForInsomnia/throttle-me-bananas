@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Icon Generator</title>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+  <script>
+    // Generate simple placeholder icons
+    const sizes = [16, 32, 48, 128];
+    
+    sizes.forEach(size => {
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      
+      // Background
+      ctx.fillStyle = '#FFD700'; // Gold/banana yellow
+      ctx.fillRect(0, 0, size, size);
+      
+      // Border
+      ctx.strokeStyle = '#FF8C00'; // Dark orange
+      ctx.lineWidth = Math.max(1, size / 16);
+      ctx.strokeRect(0, 0, size, size);
+      
+      // Simple "B" text
+      ctx.fillStyle = '#333';
+      ctx.font = `bold ${size * 0.6}px Arial`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('🍌', size / 2, size / 2);
+      
+      // Download
+      canvas.toBlob(blob => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `icon${size}.png`;
+        a.click();
+      });
+    });
+    
+    document.body.innerHTML = '<p>Icons generated! Check your downloads folder and move them to assets/icons/</p>';
+  </script>
+</body>
+</html>

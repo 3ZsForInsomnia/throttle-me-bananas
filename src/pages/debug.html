@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Debug Dashboard - Throttle Me, Bananas!</title>
+  <style>
+    body {
+      font-family: monospace;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #1e1e1e;
+      color: #d4d4d4;
+    }
+    h1 { color: #4ec9b0; }
+    h2 { color: #569cd6; margin-top: 30px; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 20px;
+      margin: 20px 0;
+    }
+    .panel {
+      background: #252526;
+      border: 1px solid #3e3e42;
+      border-radius: 4px;
+      padding: 15px;
+    }
+    .panel h3 {
+      margin-top: 0;
+      color: #4fc1ff;
+    }
+    pre {
+      background: #1e1e1e;
+      padding: 10px;
+      border-radius: 3px;
+      overflow-x: auto;
+      font-size: 11px;
+      line-height: 1.4;
+      border: 1px solid #3e3e42;
+    }
+    button {
+      padding: 8px 16px;
+      margin: 5px 5px 5px 0;
+      background: #0e639c;
+      color: white;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      font-family: monospace;
+    }
+    button:hover {
+      background: #1177bb;
+    }
+    .refresh {
+      background: #106ebe;
+    }
+    .danger {
+      background: #f48771;
+    }
+    .danger:hover {
+      background: #f14c28;
+    }
+    .success { color: #4ec9b0; }
+    .error { color: #f48771; }
+    .warning { color: #dcdcaa; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0;
+    }
+    th, td {
+      padding: 8px;
+      text-align: left;
+      border-bottom: 1px solid #3e3e42;
+    }
+    th {
+      color: #4fc1ff;
+    }
+    .log-entry {
+      padding: 5px;
+      margin: 2px 0;
+      border-left: 3px solid #3e3e42;
+      padding-left: 10px;
+      font-size: 12px;
+    }
+    .auto-refresh {
+      float: right;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🍌 Debug Dashboard</h1>
+  
+  <div style="margin: 20px 0;">
+    <button class="refresh" onclick="refreshAll()">🔄 Refresh All</button>
+    <button onclick="clearLogs()">Clear Logs</button>
+    <button class="danger" onclick="clearStorage()">⚠️ Clear Storage</button>
+    <label class="auto-refresh">
+      <input type="checkbox" id="autoRefresh" onchange="toggleAutoRefresh()">
+      Auto-refresh (5s)
+    </label>
+  </div>
+
+  <div class="grid">
+    <div class="panel">
+      <h3>📊 Statistics</h3>
+      <div id="stats">Loading...</div>
+    </div>
+    
+    <div class="panel">
+      <h3>⚙️ Configuration</h3>
+      <div id="config">Loading...</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>📝 Access Logs (Last 20)</h3>
+    <div id="logs">Loading...</div>
+  </div>
+
+  <div class="panel">
+    <h3>🎯 Active Rules by Site</h3>
+    <button onclick="checkSite()">Check Site</button>
+    <input type="text" id="siteInput" placeholder="e.g., discord.com" style="padding: 8px; margin-left: 10px; background: #1e1e1e; color: #d4d4d4; border: 1px solid #3e3e42; border-radius: 3px;">
+    <div id="siteCheck"></div>
+  </div>
+
+  <script type="module">
+    import { getConfiguration, getAccessLogs, getStorageStats, clearAllData, initializeStorage } from '../storage/storage-manager.js';
+    import { getActiveRulesForSite, shouldBlockAccess, getMostRestrictiveCount } from '../background/rule-engine.js';
+    
+    let autoRefreshInterval = null;
+
+    async function refreshStats() {
+      const stats = await getStorageStats();
+      document.getElementById('stats').innerHTML = `
+        <table>
+          <tr><td>Rule Groups:</td><td><strong>${stats.configCount}</strong></td></tr>
+          <tr><td>Access Logs:</td><td><strong>${stats.logsCount}</strong></td></tr>
+          <tr><td>Storage Version:</td><td><strong>${stats.version}</strong></td></tr>
+        </table>
+      `;
+    }
+
+    async function refreshConfig() {
+      const config = await getConfiguration();
+      const html = config.groups.map((group, i) => `
+        <div class="log-entry">
+          <strong>${i + 1}. ${group.name}</strong><br>
+          Duration: ${group.duration}min | 
+          Max: ${group.maxAccesses} | 
+          Strict: ${group.strictMode ? 'Yes' : 'No'}<br>
+          Sites: ${group.sites.join(', ')}<br>
+          ${group.schedule ? `Schedule: Days ${group.schedule.days.join(',')} @ ${group.schedule.times.join(', ')}` : 'Always Active'}
+        </div>
+      `).join('');
+      document.getElementById('config').innerHTML = html || '<em>No rules configured</em>';
+    }
+
+    async function refreshLogs() {
+      const logs = await getAccessLogs();
+      const recent = logs.slice(-20).reverse();
+      
+      if (recent.length === 0) {
+        document.getElementById('logs').innerHTML = '<em>No access logs yet</em>';
+        return;
+      }
+
+      const html = `
+        <table>
+          <thead>
+            <tr>
+              <th>Site</th>
+              <th>Time</th>
+              <th>Tab ID</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${recent.map(log => {
+              const date = new Date(log.timestamp);
+              const timeStr = date.toLocaleTimeString();
+              const ago = Math.round((Date.now() - log.timestamp) / 60000);
+              return `
+                <tr>
+                  <td>${log.site}</td>
+                  <td>${timeStr} <span style="color: #858585">(${ago}m ago)</span></td>
+                  <td>${log.tabId}</td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      `;
+      document.getElementById('logs').innerHTML = html;
+    }
+
+    window.refreshAll = async function() {
+      await Promise.all([refreshStats(), refreshConfig(), refreshLogs()]);
+    };
+
+    window.clearLogs = function() {
+      document.getElementById('logs').innerHTML = '';
+    };
+
+    window.clearStorage = async function() {
+      if (!confirm('Clear ALL storage data? This will reset everything!')) {
+        return;
+      }
+      await clearAllData();
+      await initializeStorage();
+      await refreshAll();
+      alert('Storage cleared and reinitialized');
+    };
+
+    window.checkSite = async function() {
+      const site = document.getElementById('siteInput').value.trim();
+      if (!site) {
+        alert('Enter a site to check');
+        return;
+      }
+
+      const config = await getConfiguration();
+      const logs = await getAccessLogs();
+      
+      const activeRules = getActiveRulesForSite(site, config);
+      const blockDecision = shouldBlockAccess(site, config, logs);
+      const remaining = getMostRestrictiveCount(site, config, logs);
+
+      let html = `<h4 style="color: #4fc1ff; margin-top: 15px;">Results for: ${site}</h4>`;
+      
+      if (activeRules.length === 0) {
+        html += `<p class="warning">⚠️ No active rules apply to this site</p>`;
+      } else {
+        html += `<p class="success">✓ ${activeRules.length} active rule(s) found:</p>`;
+        html += activeRules.map(rule => `
+          <div class="log-entry">
+            <strong>${rule.name}</strong><br>
+            Max: ${rule.maxAccesses} in ${rule.duration}min | Strict: ${rule.strictMode}
+          </div>
+        `).join('');
+      }
+
+      if (blockDecision.block) {
+        html += `<p class="error">🚫 WOULD BE BLOCKED: ${blockDecision.reason}</p>`;
+      } else {
+        html += `<p class="success">✓ Access allowed</p>`;
+      }
+
+      if (remaining !== null) {
+        const color = remaining === 0 ? 'error' : remaining === 1 ? 'warning' : 'success';
+        html += `<p class="${color}">Remaining accesses: <strong>${remaining}</strong></p>`;
+      }
+
+      document.getElementById('siteCheck').innerHTML = html;
+    };
+
+    window.toggleAutoRefresh = function() {
+      const checkbox = document.getElementById('autoRefresh');
+      if (checkbox.checked) {
+        autoRefreshInterval = setInterval(refreshAll, 5000);
+      } else {
+        if (autoRefreshInterval) {
+          clearInterval(autoRefreshInterval);
+          autoRefreshInterval = null;
+        }
+      }
+    };
+
+    // Initial load
+    refreshAll();
+  </script>
+</body>
+</html>

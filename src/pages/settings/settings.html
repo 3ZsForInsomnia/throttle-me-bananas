@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings - Throttle Me, Bananas!</title>
+  <link rel="stylesheet" href="settings.css">
+</head>
+<body>
+  <div class="header">
+    <div class="header-content">
+      <div class="header-left">
+        <h1>🍌 Throttle Me, Bananas!</h1>
+        <p class="subtitle">Configure your site access rules</p>
+      </div>
+      <div class="header-actions">
+        <button id="import-btn" class="btn btn-secondary" title="Import configuration from JSON file">
+          📥 Import
+        </button>
+        <button id="export-btn" class="btn btn-secondary" title="Export configuration as JSON file">
+          📤 Export
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Statistics Section -->
+    <div id="stats-section" class="stats-section">
+      <div class="stat-card">
+        <div class="stat-value" id="stat-groups">0</div>
+        <div class="stat-label">Rule Groups</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="stat-sites">0</div>
+        <div class="stat-label">Sites Tracked</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="stat-active">0</div>
+        <div class="stat-label">Active Now</div>
+      </div>
+    </div>
+
+    <!-- Warning Section for Overlaps -->
+    <div id="overlap-warning" class="warning-section hidden">
+      <div class="warning-header">
+        <span class="warning-icon">⚠️</span>
+        <strong>Overlapping Sites Detected</strong>
+      </div>
+      <div id="overlap-details" class="overlap-details"></div>
+    </div>
+
+    <!-- Success/Error Messages -->
+    <div id="message-area"></div>
+
+    <!-- Rule Groups List -->
+    <div id="groups-container" class="groups-container">
+      <!-- Rule groups will be rendered here -->
+    </div>
+
+    <!-- Add New Group Button -->
+    <div class="add-group-section">
+      <button id="add-group-btn" class="btn btn-primary btn-large">
+        ➕ Add New Rule Group
+      </button>
+    </div>
+
+    <!-- Empty State -->
+    <div id="empty-state" class="empty-state hidden">
+      <div class="empty-icon">📭</div>
+      <h2>No Rule Groups Yet</h2>
+      <p>Create your first rule group to start throttling site access.</p>
+      <button class="btn btn-primary" onclick="document.getElementById('add-group-btn').click()">
+        Get Started
+      </button>
+    </div>
+  </div>
+
+  <!-- Import Modal -->
+  <div id="import-modal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Import Configuration</h2>
+        <button class="modal-close" id="import-modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>Paste your configuration JSON below or upload a file:</p>
+        <div class="file-upload-area">
+          <input type="file" id="import-file" accept=".json" class="hidden">
+          <button class="btn btn-secondary" onclick="document.getElementById('import-file').click()">
+            Choose File
+          </button>
+          <span id="file-name" class="file-name"></span>
+        </div>
+        <textarea id="import-json" placeholder='{"groups": [...]}'></textarea>
+        <div id="import-errors" class="error-messages"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="import-cancel">Cancel</button>
+        <button class="btn btn-primary" id="import-confirm">Import</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="settings.js"></script>
+</body>
+</html>

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Utility Tests - Throttle Me, Bananas!</title>
+  <style>
+    body {
+      font-family: monospace;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .test-section {
+      margin: 20px 0;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    .test-section h2 {
+      margin-top: 0;
+    }
+    .test-case {
+      margin: 10px 0;
+      padding: 10px;
+      background: #f5f5f5;
+      border-radius: 3px;
+    }
+    .pass { color: green; }
+    .fail { color: red; }
+    pre {
+      background: #eee;
+      padding: 10px;
+      border-radius: 3px;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <h1>Utility Function Tests</h1>
+  <div id="results"></div>
+  
+  <script type="module">
+    import { extractDomain, extractPath, matchesSitePattern } from '../utils/url-matcher.js';
+    import { parseTimeRange, isTimeInRange, isRuleActiveNow } from '../utils/time-utils.js';
+    import { filterAccessesInWindow, calculateRemainingAccesses } from '../utils/access-calculator.js';
+    
+    const results = document.getElementById('results');
+    
+    function addSection(title) {
+      const section = document.createElement('div');
+      section.className = 'test-section';
+      section.innerHTML = `<h2>${title}</h2>`;
+      results.appendChild(section);
+      return section;
+    }
+    
+    function addTest(section, description, passed, details = '') {
+      const test = document.createElement('div');
+      test.className = 'test-case';
+      test.innerHTML = `
+        <span class="${passed ? 'pass' : 'fail'}">${passed ? '✓' : '✗'}</span>
+        ${description}
+        ${details ? `<pre>${details}</pre>` : ''}
+      `;
+      section.appendChild(test);
+    }
+    
+    // URL Matcher Tests
+    const urlSection = addSection('URL Matcher Tests');
+    
+    const testUrl1 = 'https://discord.com/channels/123/456';
+    const domain1 = extractDomain(testUrl1);
+    addTest(urlSection, 'Extract domain from discord URL', domain1 === 'discord.com', `Got: ${domain1}`);
+    
+    const path1 = extractPath(testUrl1);
+    addTest(urlSection, 'Extract path from discord URL', path1 === '/channels/123/456', `Got: ${path1}`);
+    
+    addTest(urlSection, 'Match domain-only pattern', 
+      matchesSitePattern('https://discord.com/channels/123', 'discord.com'));
+    
+    addTest(urlSection, 'Match path-specific pattern', 
+      matchesSitePattern('https://discord.com/channels/123', 'discord.com/channels'));
+    
+    addTest(urlSection, 'Reject non-matching path', 
+      !matchesSitePattern('https://discord.com/other/123', 'discord.com/channels'));
+    
+    addTest(urlSection, 'Match subdomain', 
+      matchesSitePattern('https://mail.google.com', 'google.com'));
+    
+    addTest(urlSection, 'Reject different domain', 
+      !matchesSitePattern('https://gmail.com', 'google.com'));
+    
+    // Time Utils Tests
+    const timeSection = addSection('Time Utilities Tests');
+    
+    const timeRange1 = parseTimeRange('0900-1700');
+    addTest(timeSection, 'Parse time range', 
+      timeRange1.start.hours === 9 && timeRange1.end.hours === 17,
+      JSON.stringify(timeRange1, null, 2));
+    
+    const testTime = new Date('2024-01-01T12:30:00');
+    const inRange = isTimeInRange(testTime, { hours: 9, minutes: 0 }, { hours: 17, minutes: 0 });
+    addTest(timeSection, 'Time is in range (12:30 in 9-17)', inRange);
+    
+    const outOfRange = isTimeInRange(testTime, { hours: 13, minutes: 0 }, { hours: 17, minutes: 0 });
+    addTest(timeSection, 'Time is out of range (12:30 not in 13-17)', !outOfRange);
+    
+    // Test isRuleActiveNow with current day/time
+    const alwaysActiveSchedule = null;
+    addTest(timeSection, 'No schedule means always active', 
+      isRuleActiveNow(alwaysActiveSchedule));
+    
+    // Access Calculator Tests
+    const accessSection = addSection('Access Calculator Tests');
+    
+    const now = Date.now();
+    const testAccesses = [
+      { site: 'discord.com', timestamp: now - (5 * 60 * 1000), tabId: 1 },
+      { site: 'discord.com', timestamp: now - (15 * 60 * 1000), tabId: 2 },
+      { site: 'discord.com', timestamp: now - (70 * 60 * 1000), tabId: 3 },
+      { site: 'gmail.com', timestamp: now - (10 * 60 * 1000), tabId: 4 },
+    ];
+    
+    const filtered = filterAccessesInWindow(testAccesses, 60);
+    addTest(accessSection, 'Filter accesses in 60min window (should be 3)', 
+      filtered.length === 3,
+      `Found ${filtered.length} accesses`);
+    
+    const remaining = calculateRemainingAccesses(
+      testAccesses,
+      3, // maxAccesses
+      60, // duration
+      false, // strictMode
+      ['discord.com'],
+      'discord.com'
+    );
+    addTest(accessSection, 'Calculate remaining (max 3, used 2, should have 1)', 
+      remaining === 1,
+      `Remaining: ${remaining}`);
+    
+    const strictRemaining = calculateRemainingAccesses(
+      testAccesses,
+      3, // maxAccesses
+      60, // duration
+      true, // strictMode
+      ['discord.com', 'gmail.com'],
+      'discord.com'
+    );
+    addTest(accessSection, 'Calculate with strict mode (max 3, used 3 total, should have 0)', 
+      strictRemaining === 0,
+      `Remaining: ${strictRemaining}`);
+    
+    // Summary
+    const allTests = document.querySelectorAll('.test-case');
+    const passed = document.querySelectorAll('.pass').length;
+    const total = allTests.length;
+    
+    const summary = document.createElement('div');
+    summary.className = 'test-section';
+    summary.innerHTML = `<h2>Summary: ${passed}/${total} tests passed</h2>`;
+    results.insertBefore(summary, results.firstChild);
+  </script>
+</body>
+</html>
