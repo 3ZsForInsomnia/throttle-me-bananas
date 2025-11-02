@@ -1,10 +1,21 @@
 # Throttle Me, Bananas! 🍌
 
-A Chrome extension that helps you control your access to distracting websites by limiting how many times you can visit them within specified time periods.
+Control website access by limiting visits within time windows. A Chrome extension for managing digital distractions.
 
 ## Core Concept
 
-This extension tracks and limits the number of times you can access certain websites within configurable time windows. If you exceed your access limit for a given time period, the extension will block access to that site until enough time has passed that you're back under the limit.
+Track and limit website visits within rolling time windows. Each new tab/navigation counts as an access. Refreshing doesn't count. When you hit your limit, access is blocked until the window rolls forward.
+
+**Example:** 3 accesses per hour to gmail.com → After 3 visits in 60 minutes, blocked until oldest access expires.
+
+## Installation
+
+1. Download or clone this repository
+2. Open Chrome → `chrome://extensions/`
+3. Enable "Developer mode" (top right toggle)
+4. Click "Load unpacked"
+5. Select the `throttle-me-bananas` folder
+6. Click the extension icon to configure rules
 
 ## Key Features
 

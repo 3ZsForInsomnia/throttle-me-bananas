@@ -1,0 +1,20 @@
+{
+  "embedding_function": "SentenceTransformerEmbeddingFunction",
+  "embedding_params": {
+    "model_name": "BAAI/bge-m3"
+  },
+  "chunk_size": 800,
+  "overlap_ratio": 0.2,
+  "query_multiplier": 3,
+  "n_result": 10,
+  "reranker": "CrossEncoderReranker",
+  "reranker_params": {
+    "model_name_or_path": "BAAI/bge-reranker-base"
+    // "model_name_or_path": "BAAI/bge-reranker-large"
+  },
+  "hnsw": {
+    "hnsw:M": 64,
+  },
+  "chunk_filters": {},
+  "encoding": "utf8"
+}
